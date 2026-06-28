@@ -3,16 +3,17 @@ package com.zenoptimize.mixin;
 import com.zenoptimize.config.ZenConfig;
 import com.zenoptimize.util.FpsTracker;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
+import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// Sodium-safe: EntityRenderDispatcher is not touched by Sodium/Lithium/Iris
-@Mixin(EntityRenderDispatcher.class)
+// Sodium-safe: EntityRenderer.shouldRender is the culling hook in Yarn 1.21.9+
+// (EntityRenderDispatcher was renamed to EntityRenderManager in 1.21.9, and
+//  shouldRender moved to the per-entity-type EntityRenderer base class)
+@Mixin(EntityRenderer.class)
 public class EntityRenderDispatcherMixin {
 
     // When FPS is critically low, cut entity render distance by up to 50%
@@ -39,3 +40,4 @@ public class EntityRenderDispatcherMixin {
         }
     }
 }
+

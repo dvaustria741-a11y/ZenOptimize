@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "com.zenoptimize.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ParticleManagerMixin",
+    "GameRendererMixin",
+    "WorldRendererMixin",
+    "BackgroundRendererMixin",
+    "MinecraftClientMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

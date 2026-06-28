@@ -3,13 +3,12 @@
   "id": "zenoptimize",
   "version": "${version}",
   "name": "ZenOptimize",
-  "description": "Boost FPS and reduce lag spikes for Minecraft Java on Android launchers (Zalith, PojavLauncher, MojoLauncher, etc.)",
+  "description": "Boost FPS and reduce lag spikes on Android launchers (Zalith, PojavLauncher, MojoLauncher). Sodium/Lithium/Iris compatible.",
   "authors": ["Zen"],
   "contact": {
     "sources": "https://github.com/dvaustria741-a11y/ZenOptimize"
   },
   "license": "MIT",
-  "icon": "assets/zenoptimize/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": ["com.zenoptimize.ZenOptimizeMod"]
@@ -20,5 +19,17 @@
     "minecraft": "~1.21.1",
     "java": ">=21",
     "fabric-api": "*"
+  },
+  "suggests": {
+    "sodium": "*",
+    "lithium": "*",
+    "iris": "*",
+    "indium": "*"
+  },
+  "custom": {
+    "modmenu:badges": ["library"],
+    "modmenu:links": {
+      "modmenu.discord": ""
+    }
   }
 }

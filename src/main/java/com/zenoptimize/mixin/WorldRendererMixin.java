@@ -1,26 +1,19 @@
 package com.zenoptimize.mixin;
 
-import com.zenoptimize.config.ZenConfig;
-import com.zenoptimize.util.FpsTracker;
 import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(WorldRenderer.class)
+// priority=900 keeps us below Sodium (1000). require=0 in mixin json means
+// it will not crash if Sodium replaces this class entirely.
+@Mixin(value = WorldRenderer.class, priority = 900)
 public class WorldRendererMixin {
 
-    // Reduce max entity render distance when FPS is low
-    @Inject(
-        method = "isRenderingReady",
-        at = @At("HEAD"),
-        cancellable = true
-    )
-    private void zenoptimize$fastReadyCheck(net.minecraft.util.math.BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        // No-op — hook point reserved for future culling
-    }
+    // Reserved injection point — actual dynamic render distance logic lives in
+    // ZenOptimizeMod tick loop (options.getViewDistance().setValue(...))
+    // so we do not need to touch WorldRenderer internals at all.
+    // This class is kept as a safe placeholder for future per-frame culling hooks.
 }

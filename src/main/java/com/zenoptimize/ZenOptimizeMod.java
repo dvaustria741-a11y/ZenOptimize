@@ -23,7 +23,7 @@ public class ZenOptimizeMod implements ClientModInitializer {
         instance = this;
         ZenConfig.load();
 
-        LOGGER.info("[ZenOptimize] v1.2.0 loaded — mobile optimizations active.");
+        LOGGER.info("[ZenOptimize] v1.2.1 loaded — mobile optimizations active.");
         LOGGER.info("[ZenOptimize] Sodium={} Lithium={} Iris={}",
                 SODIUM_LOADED, LITHIUM_LOADED, IRIS_LOADED);
 

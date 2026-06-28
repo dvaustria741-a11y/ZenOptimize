@@ -2,10 +2,14 @@ package com.zenoptimize.mixin;
 
 import com.zenoptimize.config.ZenConfig;
 import net.minecraft.client.render.Camera;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.BlockView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Smooth Camera: eases the rendered camera rotation toward the real,
@@ -24,6 +28,15 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
  * (less perceived delay), lower = smoother/more lag. Disabled entirely via
  * ZenConfig.smoothCamera, in which case the real rotation passes straight
  * through untouched.
+ *
+ * Camera#update() calls setRotation() TWICE in one frame when in
+ * third-person front view: once with the entity's real yaw/pitch, then
+ * again flipped 180°/negated for the front-facing inversion. We only want
+ * to ease the first (real) call — the second call is a deliberate flip,
+ * not a rotation to smooth into — so we track call order per frame and
+ * derive the second call's result directly from the first call's smoothed
+ * result using the same flip, instead of smoothing the ~180° jump itself
+ * (which is what broke third-person front view previously).
  */
 @Mixin(Camera.class)
 public class CameraMixin {
@@ -34,26 +47,52 @@ public class CameraMixin {
     private long zenoptimize$lastNanos = 0L;
     private float zenoptimize$alpha = 1f;
 
+    private int zenoptimize$callsThisFrame = 0;
+    private float zenoptimize$primaryRawYaw;
+    private float zenoptimize$primarySmoothedYaw;
+    private float zenoptimize$primarySmoothedPitch;
+
+    @Inject(method = "update", at = @At("HEAD"))
+    private void zenoptimize$onUpdateStart(BlockView area, Entity focusedEntity, boolean thirdPerson,
+                                            boolean inverseView, float tickDelta, CallbackInfo ci) {
+        zenoptimize$callsThisFrame = 0;
+    }
+
     @ModifyVariable(method = "setRotation", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private float zenoptimize$smoothYaw(float yaw) {
+        zenoptimize$callsThisFrame++;
+
         if (!ZenConfig.smoothCamera) {
             zenoptimize$smoothedYaw = yaw;
             zenoptimize$initialized = false;
             return yaw;
         }
-        zenoptimize$advanceTime();
-        if (!zenoptimize$initialized) {
-            zenoptimize$smoothedYaw = yaw;
-            zenoptimize$initialized = true;
-            return yaw;
+
+        if (zenoptimize$callsThisFrame == 1) {
+            zenoptimize$advanceTime();
+            zenoptimize$primaryRawYaw = yaw;
+            if (!zenoptimize$initialized) {
+                zenoptimize$smoothedYaw = yaw;
+                zenoptimize$initialized = true;
+            } else {
+                float delta = MathHelper.wrapDegrees(yaw - zenoptimize$smoothedYaw);
+                zenoptimize$smoothedYaw = Math.abs(delta) < 0.02f
+                        ? yaw
+                        : zenoptimize$smoothedYaw + delta * zenoptimize$alpha;
+            }
+            zenoptimize$primarySmoothedYaw = zenoptimize$smoothedYaw;
+            return zenoptimize$smoothedYaw;
         }
-        float delta = MathHelper.wrapDegrees(yaw - zenoptimize$smoothedYaw);
-        if (Math.abs(delta) < 0.02f) {
-            zenoptimize$smoothedYaw = yaw;
-        } else {
-            zenoptimize$smoothedYaw += delta * zenoptimize$alpha;
+
+        if (zenoptimize$callsThisFrame == 2) {
+            // Third-person front view's flip — apply the same flip to our
+            // already-smoothed primary result instead of smoothing this jump.
+            float rawDelta = MathHelper.wrapDegrees(yaw - zenoptimize$primaryRawYaw);
+            return zenoptimize$primarySmoothedYaw + rawDelta;
         }
-        return zenoptimize$smoothedYaw;
+
+        // Unexpected extra call — don't guess, pass the real value through.
+        return yaw;
     }
 
     @ModifyVariable(method = "setRotation", at = @At("HEAD"), argsOnly = true, ordinal = 1)
@@ -62,13 +101,22 @@ public class CameraMixin {
             zenoptimize$smoothedPitch = pitch;
             return pitch;
         }
-        float delta = pitch - zenoptimize$smoothedPitch;
-        if (Math.abs(delta) < 0.02f) {
-            zenoptimize$smoothedPitch = pitch;
-        } else {
-            zenoptimize$smoothedPitch += delta * zenoptimize$alpha;
+
+        if (zenoptimize$callsThisFrame == 1) {
+            float delta = pitch - zenoptimize$smoothedPitch;
+            zenoptimize$smoothedPitch = Math.abs(delta) < 0.02f
+                    ? pitch
+                    : zenoptimize$smoothedPitch + delta * zenoptimize$alpha;
+            zenoptimize$primarySmoothedPitch = zenoptimize$smoothedPitch;
+            return zenoptimize$smoothedPitch;
         }
-        return zenoptimize$smoothedPitch;
+
+        if (zenoptimize$callsThisFrame == 2) {
+            // Front view negates pitch exactly — mirror that on our smoothed value.
+            return -zenoptimize$primarySmoothedPitch;
+        }
+
+        return pitch;
     }
 
     private void zenoptimize$advanceTime() {

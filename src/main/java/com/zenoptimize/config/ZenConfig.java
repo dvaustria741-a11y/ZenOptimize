@@ -8,18 +8,12 @@ import java.nio.file.Path;
 
 public class ZenConfig {
 
-    // Dynamic Render Distance
-    public static boolean dynamicRenderDistance = true;
+    // FPS threshold used by the offscreen entity culling feature below
     public static int targetFps = 30;
-    public static int minRenderDistance = 2;
 
     // Particles
     public static boolean limitParticles = true;
     public static int maxParticles = 200;
-
-    // Memory
-    public static boolean periodicGc = true;
-    public static float gcThreshold = 0.15f; // GC when <15% free
 
     // Rendering
     public static boolean reduceFogDensity = false;
@@ -57,13 +51,9 @@ public class ZenConfig {
     }
 
     private static void applyData(ZenConfigData d) {
-        dynamicRenderDistance = d.dynamicRenderDistance;
         targetFps = d.targetFps;
-        minRenderDistance = d.minRenderDistance;
         limitParticles = d.limitParticles;
         maxParticles = d.maxParticles;
-        periodicGc = d.periodicGc;
-        gcThreshold = d.gcThreshold;
         reduceFogDensity = d.reduceFogDensity;
         skipOffscreenEntities = d.skipOffscreenEntities;
         mobileFrameCap = d.mobileFrameCap;
@@ -73,13 +63,9 @@ public class ZenConfig {
 
     private static ZenConfigData buildData() {
         ZenConfigData d = new ZenConfigData();
-        d.dynamicRenderDistance = dynamicRenderDistance;
         d.targetFps = targetFps;
-        d.minRenderDistance = minRenderDistance;
         d.limitParticles = limitParticles;
         d.maxParticles = maxParticles;
-        d.periodicGc = periodicGc;
-        d.gcThreshold = gcThreshold;
         d.reduceFogDensity = reduceFogDensity;
         d.skipOffscreenEntities = skipOffscreenEntities;
         d.mobileFrameCap = mobileFrameCap;
@@ -88,14 +74,14 @@ public class ZenConfig {
         return d;
     }
 
+    // NOTE: old config files on disk may still contain dynamicRenderDistance,
+    // minRenderDistance, periodicGc, gcThreshold from before 1.2.0 — Gson
+    // simply ignores fields that no longer exist on ZenConfigData, so this
+    // loads fine without any migration step needed.
     public static class ZenConfigData {
-        public boolean dynamicRenderDistance = true;
         public int targetFps = 30;
-        public int minRenderDistance = 2;
         public boolean limitParticles = true;
         public int maxParticles = 200;
-        public boolean periodicGc = true;
-        public float gcThreshold = 0.15f;
         public boolean reduceFogDensity = false;
         public boolean skipOffscreenEntities = true;
         public int mobileFrameCap = 60;

@@ -13,12 +13,13 @@ ZenOptimize is a lightweight client-side Fabric mod that squeezes every bit of p
 
 | Feature | Description |
 |---|---|
-| **Dynamic Render Distance** | Automatically lowers render distance when FPS drops below your target, restores it when recovered |
 | **Particle Limiter** | Caps active particles to prevent particle storms from tanking FPS |
+| **Offscreen Entity Culling** | Skips rendering far-away entities once FPS drops below target, clawing back frames during the heaviest moments |
 | **Mobile Frame Cap** | Caps FPS to prevent thermal throttling on Android devices, via the game's own frame limiter (no extra busy-waiting on top) |
-| **Periodic GC Hinting** | Nudges the JVM garbage collector when free memory is critically low to reduce GC lag spikes |
 | **Fog Optimization** | Optionally pushes fog start further out to reduce overdraw cost on low-end GPUs |
 | **Smooth Camera** | Eases camera rotation across frames to remove micro-jitter, without adding any delay to your actual aim/input |
+
+> **Removed in 1.2.0:** Dynamic Render Distance and Periodic GC Hinting. Both were causing the exact lag they were meant to prevent — Dynamic Render Distance triggered a full chunk re-render every time it adjusted, and the GC hint forced a blocking `System.gc()` pause. Both fought systems (chunk loading, JVM memory management) that already handle themselves well; removing them was a net smoothness win.
 
 ---
 
@@ -52,13 +53,10 @@ After first launch, a config file is created at:
 
 | Option | Default | Description |
 |---|---|---|
-| `dynamicRenderDistance` | `true` | Enable auto render distance scaling |
-| `targetFps` | `30` | FPS threshold that triggers adjustments |
-| `minRenderDistance` | `2` | Minimum chunks to allow (never goes below this) |
+| `targetFps` | `30` | FPS threshold below which offscreen entities get culled more aggressively |
+| `skipOffscreenEntities` | `true` | Enable extra entity culling when FPS drops below `targetFps` |
 | `limitParticles` | `true` | Enable particle cap |
 | `maxParticles` | `200` | Maximum simultaneous particles |
-| `periodicGc` | `true` | Enable GC hinting on low memory |
-| `gcThreshold` | `0.15` | Free memory ratio that triggers GC hint |
 | `reduceFogDensity` | `false` | Extend fog start to reduce overdraw |
 | `mobileFrameCap` | `60` | Max FPS cap (0 = disabled). Applied through the vanilla max-FPS option so frame pacing stays smooth — does not run its own separate limiter |
 | `smoothCamera` | `true` | Eases camera rotation between frames to reduce jitter; only affects what's rendered, never your actual aim |

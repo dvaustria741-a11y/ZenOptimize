@@ -41,6 +41,17 @@ jobs:
           path: /tmp/build_output.txt
           if-no-files-found: warn
 
+      - name: Commit error log to repo
+        if: failure()
+        run: |
+          mkdir -p .ci-logs
+          cp /tmp/build_output.txt .ci-logs/last-build-error.log
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .ci-logs/last-build-error.log
+          git commit -m "ci: record build error log [skip ci]" || echo "no changes to commit"
+          git push
+
       - name: Capture mod version
         id: mod_version
         if: success()

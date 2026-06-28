@@ -28,6 +28,10 @@ public class ZenConfig {
     // Mobile frame cap (0 = disabled)
     public static int mobileFrameCap = 60;
 
+    // Smooth Camera — eases camera rotation, doesn't touch actual aim input
+    public static boolean smoothCamera = true;
+    public static double smoothCameraSpeed = 35.0; // higher = snappier/less delay, lower = smoother/more lag
+
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path CONFIG_PATH = FabricLoader.getInstance()
             .getConfigDir().resolve("zenoptimize.json");
@@ -63,6 +67,8 @@ public class ZenConfig {
         reduceFogDensity = d.reduceFogDensity;
         skipOffscreenEntities = d.skipOffscreenEntities;
         mobileFrameCap = d.mobileFrameCap;
+        smoothCamera = d.smoothCamera;
+        smoothCameraSpeed = d.smoothCameraSpeed;
     }
 
     private static ZenConfigData buildData() {
@@ -77,6 +83,8 @@ public class ZenConfig {
         d.reduceFogDensity = reduceFogDensity;
         d.skipOffscreenEntities = skipOffscreenEntities;
         d.mobileFrameCap = mobileFrameCap;
+        d.smoothCamera = smoothCamera;
+        d.smoothCameraSpeed = smoothCameraSpeed;
         return d;
     }
 
@@ -91,5 +99,7 @@ public class ZenConfig {
         public boolean reduceFogDensity = false;
         public boolean skipOffscreenEntities = true;
         public int mobileFrameCap = 60;
+        public boolean smoothCamera = true;
+        public double smoothCameraSpeed = 35.0;
     }
 }

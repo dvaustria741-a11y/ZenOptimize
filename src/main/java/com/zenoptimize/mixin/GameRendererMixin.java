@@ -1,6 +1,5 @@
 package com.zenoptimize.mixin;
 
-import com.zenoptimize.config.ZenConfig;
 import com.zenoptimize.util.FpsTracker;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.RenderTickCounter;
@@ -12,36 +11,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
 
-    private long zenoptimize$lastFrameTime = 0L;
-
     // GameRenderer.render signature changed in 1.21.2:
     //   OLD: render(float tickDelta, long startTime, boolean tick)
     //   NEW: render(RenderTickCounter tickCounter, boolean tick)
+    //
+    // NOTE: this mixin used to also run its own Thread.sleep()-based frame
+    // limiter here (zenoptimize$capFramerate), stacked on top of the
+    // mobileFrameCap value MinecraftClientMixin already applies via the
+    // vanilla maxFps option. That meant two limiters were fighting every
+    // frame, and Thread.sleep() has poor precision in this environment
+    // (Android JVM via Zalith's caciocavallo translation layer), which is
+    // what caused the stuttery "feels laggy" sensation even while nominally
+    // hitting the target FPS. Letting the engine's own (much smoother)
+    // maxFps limiter do this job alone fixes it — we only track frames here
+    // now, for the dynamic render distance feature.
     @Inject(method = "render", at = @At("HEAD"))
     private void zenoptimize$trackFps(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci) {
         FpsTracker.recordFrame();
-        zenoptimize$capFramerate();
-    }
-
-    private void zenoptimize$capFramerate() {
-        int cap = ZenConfig.mobileFrameCap;
-        if (cap <= 0) return;
-        if (zenoptimize$lastFrameTime == 0L) {
-            zenoptimize$lastFrameTime = System.nanoTime();
-            return;
-        }
-        long targetNs = 1_000_000_000L / cap;
-        long now = System.nanoTime();
-        long elapsed = now - zenoptimize$lastFrameTime;
-        if (elapsed < targetNs) {
-            long sleepNs = targetNs - elapsed;
-            try {
-                Thread.sleep(sleepNs / 1_000_000L, (int)(sleepNs % 1_000_000L));
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
-            }
-        }
-        zenoptimize$lastFrameTime = System.nanoTime();
     }
 }
-

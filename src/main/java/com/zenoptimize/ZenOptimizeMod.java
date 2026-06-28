@@ -34,7 +34,7 @@ public class ZenOptimizeMod implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
 
-        LOGGER.info("[ZenOptimize] v1.0.0 loaded — mobile optimizations active.");
+        LOGGER.info("[ZenOptimize] v1.1.0 loaded — mobile optimizations active.");
         LOGGER.info("[ZenOptimize] Sodium={} Lithium={} Iris={}",
                 SODIUM_LOADED, LITHIUM_LOADED, IRIS_LOADED);
 

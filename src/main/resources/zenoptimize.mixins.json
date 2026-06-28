@@ -6,7 +6,8 @@
     "ParticleManagerMixin",
     "GameRendererMixin",
     "MinecraftClientMixin",
-    "EntityRenderDispatcherMixin"
+    "EntityRenderDispatcherMixin",
+    "CameraMixin"
   ],
   "mixins": [],
   "injectors": {

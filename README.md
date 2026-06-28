@@ -15,9 +15,10 @@ ZenOptimize is a lightweight client-side Fabric mod that squeezes every bit of p
 |---|---|
 | **Dynamic Render Distance** | Automatically lowers render distance when FPS drops below your target, restores it when recovered |
 | **Particle Limiter** | Caps active particles to prevent particle storms from tanking FPS |
-| **Mobile Frame Cap** | Caps FPS to prevent thermal throttling on Android devices |
+| **Mobile Frame Cap** | Caps FPS to prevent thermal throttling on Android devices, via the game's own frame limiter (no extra busy-waiting on top) |
 | **Periodic GC Hinting** | Nudges the JVM garbage collector when free memory is critically low to reduce GC lag spikes |
 | **Fog Optimization** | Optionally pushes fog start further out to reduce overdraw cost on low-end GPUs |
+| **Smooth Camera** | Eases camera rotation across frames to remove micro-jitter, without adding any delay to your actual aim/input |
 
 ---
 
@@ -59,7 +60,9 @@ After first launch, a config file is created at:
 | `periodicGc` | `true` | Enable GC hinting on low memory |
 | `gcThreshold` | `0.15` | Free memory ratio that triggers GC hint |
 | `reduceFogDensity` | `false` | Extend fog start to reduce overdraw |
-| `mobileFrameCap` | `60` | Max FPS cap (0 = disabled) |
+| `mobileFrameCap` | `60` | Max FPS cap (0 = disabled). Applied through the vanilla max-FPS option so frame pacing stays smooth — does not run its own separate limiter |
+| `smoothCamera` | `true` | Eases camera rotation between frames to reduce jitter; only affects what's rendered, never your actual aim |
+| `smoothCameraSpeed` | `35.0` | How tightly the camera follows your real aim. Higher = snappier (less smoothing), lower = smoother (more lag) |
 
 ---
 

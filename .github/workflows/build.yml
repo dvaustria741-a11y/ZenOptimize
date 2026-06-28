@@ -23,16 +23,14 @@ jobs:
           java-version: "21"
           distribution: "temurin"
 
-      # System Gradle on runners is 9.x which breaks fabric-loom 1.7 (ProblemReporter API mismatch)
-      # Download Gradle 8.8 explicitly and put it first on PATH
-      - name: Install Gradle 8.8
+      - name: Install Gradle 8.11
         run: |
-          wget -q https://services.gradle.org/distributions/gradle-8.8-bin.zip -O /tmp/gradle.zip
+          wget -q https://services.gradle.org/distributions/gradle-8.11-bin.zip -O /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp/gradle-install
-          echo "/tmp/gradle-install/gradle-8.8/bin" >> $GITHUB_PATH
+          echo "/tmp/gradle-install/gradle-8.11/bin" >> $GITHUB_PATH
 
-      - name: Generate Gradle Wrapper (Gradle 8.8)
-        run: gradle wrapper --gradle-version 8.8 --distribution-type bin
+      - name: Generate Gradle Wrapper (Gradle 8.11)
+        run: gradle wrapper --gradle-version 8.11 --distribution-type bin
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew

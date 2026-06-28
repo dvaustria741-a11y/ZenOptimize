@@ -3,7 +3,7 @@ package com.zenoptimize.mixin;
 import com.zenoptimize.config.ZenConfig;
 import com.zenoptimize.util.FpsTracker;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.render.RenderTickCounter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -14,8 +14,11 @@ public class GameRendererMixin {
 
     private long zenoptimize$lastFrameTime = 0L;
 
+    // GameRenderer.render signature changed in 1.21.2:
+    //   OLD: render(float tickDelta, long startTime, boolean tick)
+    //   NEW: render(RenderTickCounter tickCounter, boolean tick)
     @Inject(method = "render", at = @At("HEAD"))
-    private void zenoptimize$trackFps(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
+    private void zenoptimize$trackFps(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci) {
         FpsTracker.recordFrame();
         zenoptimize$capFramerate();
     }
@@ -41,3 +44,4 @@ public class GameRendererMixin {
         zenoptimize$lastFrameTime = System.nanoTime();
     }
 }
+
